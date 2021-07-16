@@ -1,0 +1,64 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  become: true
+  vars:
+    create_containers: 1
+    container_name: docker_nginx
+    docker_image: nginx
+
+  tasks:
+    - name: Install aptitude using apt
+      apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
+
+    - name: Install required system packages
+      apt: name={{ item }} state=latest update_cache=yes
+      loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu xenial stable
+        state: present
+
+    - name: Update apt and install docker-ce
+      apt: update_cache=yes name=docker-ce state=latest
+
+    - name: Install Docker Module for Python
+      pip:
+        name: docker
+
+    - name: Starting Docker Daemon
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Pull Nginx image
+      docker_image:
+        name: "{{ docker_image }}"
+        source: pull
+     
+    - name: Launch Docker Container
+      docker_container:
+        name: "{{ container_name }}"
+        image: nginx
+        state: started
+        exposed_ports:
+          - "80"
+        ports:
+          - "80:80"
+        volumes:
+          - ./:/usr/share/nginx/html
+    
+    - name: Get Sys Info
+      become: true
+      shell: docker exec "{{ container_name }}" sh /usr/share/nginx/html/sysinfo.sh
+     
+
+
+
