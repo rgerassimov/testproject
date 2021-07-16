@@ -15,7 +15,6 @@ cat > /usr/share/nginx/html/index.html << EOF
 </html>
 EOF
 
-echo "chmod 0777 /usr/share/nginx/html -R"
 
 
 
