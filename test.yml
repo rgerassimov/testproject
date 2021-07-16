@@ -43,7 +43,7 @@
         name: "{{ docker_image }}"
         source: pull
      
-    - name: Launch Docker Container
+    - name: Launch Docker Container & Nginx Service
       docker_container:
         name: "{{ container_name }}"
         image: nginx
